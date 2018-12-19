@@ -18,21 +18,23 @@ function init() {
   let w = renderer.domElement.getBoundingClientRect().width;
   let h = renderer.domElement.getBoundingClientRect().height;
 
-  const camera = new Three.PerspectiveCamera(75, w / h, 0.1, 10000);
+  const camera = new Three.PerspectiveCamera(75, w / h, 0.1, 10000)
   camera.position.z = 5
   scene.add(camera)
   
-  
+  let texture = new Three.TextureLoader().load("b-kv-copy01.png")
+  texture.needsUpdate = true
   let uniforms = {
     u_time: { value: 1.0 },
     u_mouse: { value: new Three.Vector2()},
     u_resolution: { type: "v2", value: new Three.Vector2() },
+    u_texture: { type: "t", value: texture }
   }
   const material = new Three.ShaderMaterial({
     uniforms: uniforms,
     vertexShader: Shaders.vertex,
     fragmentShader: Shaders.fragment,
-    transparent: true
+    transparent: true,
   })
 
   const bg = new Three.Mesh( new Three.PlaneBufferGeometry(4, 4), material)
