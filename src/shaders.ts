@@ -13,10 +13,15 @@ export const vertex = `
 export const fragment = `
 
   varying vec2 vUv;
-  uniform float time;
+  uniform float u_time;
+  uniform vec2 u_mouse;
+  uniform vec2 u_resolution;
 
   void main() {
-    gl_FragColor = vec4(abs(sin(time)), 1.0, 1.0, 1.0);
+    float dist = distance(gl_FragCoord.xy, u_mouse);
+    float max = u_resolution.y * 0.25;
+    float a = smoothstep(1.0, max, clamp(dist, 0.0, max));
+    gl_FragColor=vec4(0.1, 1.0, 1.0, a);
   }
 
 `

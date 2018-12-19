@@ -7,41 +7,59 @@ function init() {
   if (!container) {
     return
   }
+
+  const renderer = new Three.WebGLRenderer({alpha: true})
+  container.appendChild(renderer.domElement)
+  renderer.setSize(window.innerWidth, window.innerHeight)
+
   const scene = new Three.Scene()
   const clock = new Three.Clock()
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  const camera = new Three.OrthographicCamera(
-    width / 2,
-    width / 2,
-    height / 2,
-    height / 2
-  )
+
+  let w = renderer.domElement.getBoundingClientRect().width;
+  let h = renderer.domElement.getBoundingClientRect().height;
+
+  const camera = new Three.PerspectiveCamera(75, w / h, 0.1, 10000);
+  camera.position.z = 5
   scene.add(camera)
   
   
   let uniforms = {
-    time: { value: 1.0 },
+    u_time: { value: 1.0 },
+    u_mouse: { value: new Three.Vector2()},
+    u_resolution: { type: "v2", value: new Three.Vector2() },
   }
   const material = new Three.ShaderMaterial({
     uniforms: uniforms,
     vertexShader: Shaders.vertex,
-    fragmentShader: Shaders.fragment
+    fragmentShader: Shaders.fragment,
+    transparent: true
   })
-  const mesh = new Three.Mesh( new Three.PlaneBufferGeometry(2, 2), material)
-  scene.add(mesh)
 
-  const renderer = new Three.WebGLRenderer()
-  container.appendChild(renderer.domElement)
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.render(scene, camera)
+  const bg = new Three.Mesh( new Three.PlaneBufferGeometry(4, 4), material)
+  scene.add( bg )
 
-  
+  uniforms.u_resolution.value.x = w
+  uniforms.u_resolution.value.y = h
+
+
+  container.addEventListener("mousemove", (e) => {
+    e.preventDefault()
+    uniforms.u_mouse.value.x = (e.clientX)
+    uniforms.u_mouse.value.y = h - (e.clientY)
+  })
+
+  window.addEventListener('resize', (_) => {
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    w = renderer.domElement.getBoundingClientRect().width
+    h = renderer.domElement.getBoundingClientRect().height
+    uniforms.u_resolution.value.x = w
+    uniforms.u_resolution.value.y = h
+  })
 
   animate(() => {
     var delta = 5 * clock.getDelta()
-    uniforms.time.value += 0.2 * delta;
-    renderer.clear();
+    uniforms.u_time.value += 0.2 * delta
+    renderer.render(scene, camera)
   })
 }
 
